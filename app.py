@@ -45,13 +45,19 @@ st.subheader("🍽️ Add Your Meal")
 
 col1, col2, col3 = st.columns([3, 2, 1])
 
-# Add "Select Food Item" as placeholder at top
+# Dropdown with placeholder
 food_options = ["Select Food Item"] + list(food_data.keys())
 
 with col1:
-    food_item = st.selectbox("Select Food Item", food_options, index=food_options.index(st.session_state.selected_food))
+    food_item = st.selectbox(
+        "Select Food Item",
+        food_options,
+        index=food_options.index(st.session_state.selected_food)
+    )
+
 with col2:
     quantity = st.number_input("Quantity (servings)", min_value=1, value=1)
+
 with col3:
     st.write("")  # For alignment
     if st.button("➕ Add"):
@@ -59,10 +65,12 @@ with col3:
             st.warning("⚠️ Please select a food item before adding.")
         else:
             calories = food_data[food_item] * quantity
-            st.session_state.diet_log.append({"Food": food_item, "Quantity": quantity, "Calories": calories})
-            st.session_state.selected_food = "Select Food Item"  # Reset dropdown after add
+            st.session_state.diet_log.append(
+                {"Food": food_item, "Quantity": quantity, "Calories": calories}
+            )
+            st.session_state.selected_food = "Select Food Item"  # reset dropdown
             st.success(f"Added {quantity} serving(s) of {food_item} — **{calories} kcal**")
-            st.experimental_rerun()
+            st.rerun()  # ✅ updated: works in latest Streamlit
 
 # ---------------------------
 # Display Log Section
@@ -80,9 +88,10 @@ if st.session_state.diet_log:
     with col1:
         if st.button("🧹 Reset Log"):
             st.session_state.diet_log.clear()
-            st.session_state.selected_food = "Select Food Item"  # Reset dropdown when log resets
+            st.session_state.selected_food = "Select Food Item"
             st.success("✅ Log reset successfully!")
-            st.experimental_rerun()
+            st.rerun()  # ✅ fixed version
+
     with col2:
         csv = df.to_csv(index=False).encode("utf-8")
         st.download_button("💾 Download Log", csv, "diet_log.csv", "text/csv")
@@ -94,7 +103,8 @@ else:
 # Footer
 # ---------------------------
 st.markdown("---")
-st.markdown("💡 *Tip: Track your meals every day and maintain a balanced diet!*")
+st.markdown("💡 *Tip: Use this tracker daily to monitor your calorie intake and stay fit!*")
+
 
 
 
