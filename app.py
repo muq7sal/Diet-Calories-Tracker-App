@@ -10,7 +10,7 @@ st.title("🥗 Diet Calorie Tracker")
 st.markdown("Track your daily calorie intake and stay on top of your diet goals!")
 
 # ---------------------------
-# Food Calorie Database (Updated)
+# Food Calorie Database
 # ---------------------------
 food_data = {
     "Apple": 52,
@@ -35,6 +35,8 @@ food_data = {
 # ---------------------------
 if "diet_log" not in st.session_state:
     st.session_state.diet_log = []
+if "selected_food" not in st.session_state:
+    st.session_state.selected_food = "Select Food Item"
 
 # ---------------------------
 # Add Meal Section
@@ -43,18 +45,24 @@ st.subheader("🍽️ Add Your Meal")
 
 col1, col2, col3 = st.columns([3, 2, 1])
 
+# Add "Select Food Item" as placeholder at top
+food_options = ["Select Food Item"] + list(food_data.keys())
+
 with col1:
-    food_item = st.selectbox("Select Food Item", list(food_data.keys()))
+    food_item = st.selectbox("Select Food Item", food_options, index=food_options.index(st.session_state.selected_food))
 with col2:
     quantity = st.number_input("Quantity (servings)", min_value=1, value=1)
 with col3:
     st.write("")  # For alignment
     if st.button("➕ Add"):
-        calories = food_data[food_item] * quantity
-        st.session_state.diet_log.append(
-            {"Food": food_item, "Quantity": quantity, "Calories": calories}
-        )
-        st.success(f"Added {quantity} serving(s) of {food_item} — **{calories} kcal**")
+        if food_item == "Select Food Item":
+            st.warning("⚠️ Please select a food item before adding.")
+        else:
+            calories = food_data[food_item] * quantity
+            st.session_state.diet_log.append({"Food": food_item, "Quantity": quantity, "Calories": calories})
+            st.session_state.selected_food = "Select Food Item"  # Reset dropdown after add
+            st.success(f"Added {quantity} serving(s) of {food_item} — **{calories} kcal**")
+            st.experimental_rerun()
 
 # ---------------------------
 # Display Log Section
@@ -71,9 +79,10 @@ if st.session_state.diet_log:
     col1, col2 = st.columns(2)
     with col1:
         if st.button("🧹 Reset Log"):
-            st.session_state.diet_log.clear()  # clear list safely
+            st.session_state.diet_log.clear()
+            st.session_state.selected_food = "Select Food Item"  # Reset dropdown when log resets
             st.success("✅ Log reset successfully!")
-            st.stop()  # stop further script to avoid rerun error
+            st.experimental_rerun()
     with col2:
         csv = df.to_csv(index=False).encode("utf-8")
         st.download_button("💾 Download Log", csv, "diet_log.csv", "text/csv")
@@ -85,6 +94,7 @@ else:
 # Footer
 # ---------------------------
 st.markdown("---")
-st.markdown("💡 *Tip: Use this tracker daily to monitor your calorie intake and build healthy habits!*")
+st.markdown("💡 *Tip: Track your meals every day and maintain a balanced diet!*")
+
 
 
